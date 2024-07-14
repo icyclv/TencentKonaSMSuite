@@ -69,6 +69,13 @@ public class KonaCryptoProvider extends Provider {
         provider.put("KeyGenerator.SM4",
                 "com.tencent.kona.crypto.provider.SM4KeyGenerator");
 
+        //Vectorized SM4
+        provider.put("Cipher.VectorizedSM4",
+                "com.tencent.kona.crypto.provider.VectorizedSM4Cipher$General");
+        provider.put("Cipher.VectorizedSM4 SupportedModes", "ECB");
+        provider.put("Cipher.VectorizedSM4 SupportedPaddings", "NOPADDING|PKCS7PADDING");
+
+
         provider.put("Alg.Alias.MessageDigest.OID.1.2.156.10197.1.401", "SM3");
         provider.put("MessageDigest.SM3",
                 "com.tencent.kona.crypto.provider.SM3MessageDigest");
