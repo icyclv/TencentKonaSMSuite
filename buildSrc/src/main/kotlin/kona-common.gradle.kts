@@ -24,8 +24,8 @@ plugins {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 
     withSourcesJar()
     withJavadocJar()
@@ -41,16 +41,24 @@ tasks {
 
     compileJava {
         options.encoding = "UTF-8"
+        options.compilerArgs.add("--add-modules")
+        options.compilerArgs.add("jdk.incubator.vector")
+        options.compilerArgs.add("-Xlint:-deprecation")
+        options.compilerArgs.add("-Xlint:-removal") // The AccessController was removed in JDK17
     }
 
     compileTestJava {
         options.encoding = "UTF-8"
+        options.compilerArgs.add("--add-modules")
+        options.compilerArgs.add("jdk.incubator.vector")
+        options.compilerArgs.add("-Xlint:-deprecation")
+        options.compilerArgs.add("-Xlint:-removal")
     }
 
     withType(JavaCompile::class) {
         if (!passedTasks.contains("test") && !passedTasks.contains("testOnCurrent")) {
             javaCompiler = javaToolchains.compilerFor {
-                languageVersion = JavaLanguageVersion.of(8)
+                languageVersion = JavaLanguageVersion.of(17)
             }
         }
 
@@ -60,35 +68,12 @@ tasks {
     }
 
     val testOnCurrent = register("testOnCurrent", CommonTest::class) {
-        systemProperty("test.classpath", classpath.joinToString(separator = ":"))
-
-        doFirst {
-            println("Testing JDK: " + javaLauncher.get().metadata.installationPath)
-        }
-    }
-
-    register("testOnAdop8", CommonTest::class) {
-        systemProperty("test.classpath", classpath.joinToString(separator = ":"))
-
-        javaLauncher.set(javaToolchains.launcherFor {
-            languageVersion.set(JavaLanguageVersion.of(8))
-            vendor.set(JvmVendorSpec.ADOPTIUM)
-        })
-
-        doFirst {
-            println("Testing JDK: " + javaLauncher.get().metadata.installationPath)
-        }
-    }
-
-    register("testOnAdop11", CommonTest::class) {
-        jvmArgs("--add-exports", "java.base/jdk.internal.misc=ALL-UNNAMED")
+        jvmArgs(
+            "--add-exports", "java.base/jdk.internal.access=ALL-UNNAMED",
+            "--add-modules", "jdk.incubator.vector"
+        )
 
         systemProperty("test.classpath", classpath.joinToString(separator = ":"))
-
-        javaLauncher.set(javaToolchains.launcherFor {
-            languageVersion.set(JavaLanguageVersion.of(11))
-            vendor.set(JvmVendorSpec.ADOPTIUM)
-        })
 
         doFirst {
             println("Testing JDK: " + javaLauncher.get().metadata.installationPath)
@@ -96,7 +81,10 @@ tasks {
     }
 
     register("testOnAdop17", CommonTest::class) {
-        jvmArgs("--add-exports", "java.base/jdk.internal.access=ALL-UNNAMED")
+        jvmArgs(
+            "--add-exports", "java.base/jdk.internal.access=ALL-UNNAMED",
+            "--add-modules", "jdk.incubator.vector"
+        )
 
         systemProperty("test.classpath", classpath.joinToString(separator = ":"))
 
@@ -111,7 +99,10 @@ tasks {
     }
 
     register("testOnAdop21", CommonTest::class) {
-        jvmArgs("--add-exports", "java.base/jdk.internal.access=ALL-UNNAMED")
+        jvmArgs(
+            "--add-exports", "java.base/jdk.internal.access=ALL-UNNAMED",
+            "--add-modules", "jdk.incubator.vector"
+        )
 
         systemProperty("test.classpath", classpath.joinToString(separator = ":"))
 
