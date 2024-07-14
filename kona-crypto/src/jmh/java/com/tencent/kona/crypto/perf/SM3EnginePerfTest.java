@@ -21,6 +21,7 @@ package com.tencent.kona.crypto.perf;
 
 import com.tencent.kona.crypto.TestUtils;
 import com.tencent.kona.crypto.provider.SM3Engine;
+import com.tencent.kona.crypto.provider.VectorizedSM3Engine;
 import org.bouncycastle.crypto.digests.SM3Digest;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -74,6 +75,18 @@ public class SM3EnginePerfTest {
         }
     }
 
+    @State(Scope.Benchmark)
+    public static class EngineHolderVector {
+
+        VectorizedSM3Engine engine;
+        byte[] digest = new byte[32];
+
+        @Setup(Level.Trial)
+        public void setup() throws Exception {
+            engine = new VectorizedSM3Engine();
+        }
+    }
+
     @Benchmark
     public byte[] digest(EngineHolder holder) {
         holder.engine.update(MESSAGE, 0, MESSAGE.length);
@@ -83,6 +96,14 @@ public class SM3EnginePerfTest {
 
     @Benchmark
     public byte[] digestBC(EngineHolderBC holder) {
+        holder.engine.update(MESSAGE, 0, MESSAGE.length);
+        holder.engine.doFinal(holder.digest, 0);
+        return holder.digest;
+    }
+
+    @Benchmark
+    @Fork(jvmArgsAppend = {"-server", "-Xms2048M", "-Xmx2048M", "-XX:+UseG1GC","--add-modules", "jdk.incubator.vector"})
+    public byte[] digestVector(EngineHolderVector holder) {
         holder.engine.update(MESSAGE, 0, MESSAGE.length);
         holder.engine.doFinal(holder.digest, 0);
         return holder.digest;

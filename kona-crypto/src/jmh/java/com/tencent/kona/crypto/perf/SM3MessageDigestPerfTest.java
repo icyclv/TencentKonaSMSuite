@@ -80,6 +80,17 @@ public class SM3MessageDigestPerfTest {
         }
     }
 
+    @State(Scope.Benchmark)
+    public static class MessageDigestHolderVector {
+
+        MessageDigest md;
+
+        @Setup(Level.Trial)
+        public void setup() throws Exception {
+            md = MessageDigest.getInstance("VectorizedSM3", PROVIDER);
+        }
+    }
+
     @Benchmark
     public byte[] digest(MessageDigestHolder holder) {
         return holder.md.digest(MESSAGE);
@@ -87,6 +98,12 @@ public class SM3MessageDigestPerfTest {
 
     @Benchmark
     public byte[] digestBC(MessageDigestHolderBC holder) {
+        return holder.md.digest(MESSAGE);
+    }
+
+    @Benchmark
+    @Fork(jvmArgsAppend = {"-server", "-Xms2048M", "-Xmx2048M", "-XX:+UseG1GC","--add-modules", "jdk.incubator.vector"})
+    public byte[] digestVector(MessageDigestHolderVector holder) {
         return holder.md.digest(MESSAGE);
     }
 }

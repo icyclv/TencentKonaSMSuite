@@ -79,6 +79,10 @@ public class KonaCryptoProvider extends Provider {
                 "com.tencent.kona.crypto.provider.SM3HMacKeyGenerator");
         provider.put("Alg.Alias.KeyGenerator.SM3HMac", "HmacSM3");
 
+        // Vector API
+        provider.put("MessageDigest.VectorizedSM3",
+                "com.tencent.kona.crypto.provider.VectorizedSM3MessageDigest");
+
         provider.put("Alg.Alias.Cipher.OID.1.2.156.10197.1.301", "SM2");
         provider.put("Alg.Alias.Signature.OID.1.2.156.10197.1.501", "SM2");
         provider.put("KeyPairGenerator.SM2",
